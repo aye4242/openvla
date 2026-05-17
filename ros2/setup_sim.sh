@@ -41,16 +41,24 @@ echo "  Gazebo PID: $GZ_PID, 日志: /tmp/gazebo.log"
 sleep 10
 
 echo ""
-echo "=== [3/6] Spawn Panda（gazebo_ros2_control 自动激活）==="
+echo "=== [3/6] 启动 robot_state_publisher（gazebo_ros2_control 强依赖）==="
+ros2 run robot_state_publisher robot_state_publisher \
+    --ros-args -p robot_description:="$(cat "$URDF")" \
+    &>/tmp/robot_state_publisher.log &
+RSP_PID=$!
+echo "  robot_state_publisher PID: $RSP_PID, 日志: /tmp/robot_state_publisher.log"
+sleep 2
+
+echo ""
+echo "=== [4/6] Spawn Panda（gazebo_ros2_control 自动激活 controller_manager）==="
 ros2 run gazebo_ros spawn_entity.py \
     -entity panda \
     -file "$URDF" \
     -x 0 -y 0 -z 0
-# spawn_entity 返回后 controller_manager 应已在 Gazebo 进程中启动
 sleep 3
 
 echo ""
-echo "=== [4/6] 激活控制器（joint_state_broadcaster + forward_position_controller）==="
+echo "=== [5/6] 激活控制器（joint_state_broadcaster + forward_position_controller）==="
 ros2 run controller_manager spawner joint_state_broadcaster \
     --controller-manager /controller_manager \
     --controller-manager-timeout 30
@@ -59,14 +67,12 @@ ros2 run controller_manager spawner forward_position_controller \
     --controller-manager-timeout 30
 
 echo ""
-echo "=== [5/6] 启动 panda_controller（立即锁 home pose）==="
+echo "=== [6/6] 启动 panda_controller + spawn 桌子 / 物体 / 相机 ==="
 /usr/bin/python3 "$SCRIPT_DIR/panda_controller.py" &>/tmp/panda_controller.log &
 CTRL_PID=$!
 echo "  Controller PID: $CTRL_PID, 日志: /tmp/panda_controller.log"
 sleep 1
 
-echo ""
-echo "=== [6/6] Spawn 桌子 / 物体 / 相机 ==="
 ros2 run gazebo_ros spawn_entity.py -entity table     -file "$SCRIPT_DIR/models/table/table.sdf"
 ros2 run gazebo_ros spawn_entity.py -entity red_block -file "$SCRIPT_DIR/models/object/object.sdf"
 ros2 run gazebo_ros spawn_entity.py -entity camera    -file "$SCRIPT_DIR/models/camera/camera.sdf"
@@ -76,9 +82,10 @@ echo "========================================="
 echo "  仿真环境就绪！"
 echo "========================================="
 echo "  Gazebo PID:    $GZ_PID"
+echo "  RSP PID:       $RSP_PID"
 echo "  Controller PID: $CTRL_PID"
 echo ""
-echo "  关闭：    kill $GZ_PID $CTRL_PID"
+echo "  关闭：    kill $GZ_PID $RSP_PID $CTRL_PID"
 echo ""
 echo "  验证命令："
 echo "    ros2 control list_controllers"
