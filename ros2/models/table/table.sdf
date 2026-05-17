@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="table">
+    <static>true</static>
+    <pose>0.6 0.0 0.375 0 0 0</pose>
+    <link name="table_link">
+      <!-- 桌面 -->
+      <visual name="top">
+        <pose>0 0 0.37 0 0 0</pose>
+        <geometry>
+          <box><size>0.8 0.6 0.04</size></box>
+        </geometry>
+        <material>
+          <ambient>0.6 0.4 0.2 1</ambient>
+          <diffuse>0.6 0.4 0.2 1</diffuse>
+        </material>
+      </visual>
+      <collision name="top_collision">
+        <pose>0 0 0.37 0 0 0</pose>
+        <geometry>
+          <box><size>0.8 0.6 0.04</size></box>
+        </geometry>
+      </collision>
+      <!-- 桌腿 -->
+      <visual name="leg1">
+        <pose>-0.35 -0.25 0.175 0 0 0</pose>
+        <geometry><box><size>0.04 0.04 0.35</size></box></geometry>
+        <material><ambient>0.5 0.3 0.15 1</ambient></material>
+      </visual>
+      <collision name="leg1_c"><pose>-0.35 -0.25 0.175 0 0 0</pose><geometry><box><size>0.04 0.04 0.35</size></box></geometry></collision>
+      <visual name="leg2">
+        <pose>0.35 -0.25 0.175 0 0 0</pose>
+        <geometry><box><size>0.04 0.04 0.35</size></box></geometry>
+        <material><ambient>0.5 0.3 0.15 1</ambient></material>
+      </visual>
+      <collision name="leg2_c"><pose>0.35 -0.25 0.175 0 0 0</pose><geometry><box><size>0.04 0.04 0.35</size></box></geometry></collision>
+      <visual name="leg3">
+        <pose>-0.35 0.25 0.175 0 0 0</pose>
+        <geometry><box><size>0.04 0.04 0.35</size></box></geometry>
+        <material><ambient>0.5 0.3 0.15 1</ambient></material>
+      </visual>
+      <collision name="leg3_c"><pose>-0.35 0.25 0.175 0 0 0</pose><geometry><box><size>0.04 0.04 0.35</size></box></geometry></collision>
+      <visual name="leg4">
+        <pose>0.35 0.25 0.175 0 0 0</pose>
+        <geometry><box><size>0.04 0.04 0.35</size></box></geometry>
+        <material><ambient>0.5 0.3 0.15 1</ambient></material>
+      </visual>
+      <collision name="leg4_c"><pose>0.35 0.25 0.175 0 0 0</pose><geometry><box><size>0.04 0.04 0.35</size></box></geometry></collision>
+    </link>
+  </model>
+</sdf>

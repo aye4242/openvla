@@ -104,7 +104,7 @@ class FinetuneConfig:
 
     # Tracking Parameters
     wandb_project: str = "openvla"                                  # Name of W&B project to log to (use default!)
-    wandb_entity: str = "stanford-voltron"                          # Name of entity to log under
+    wandb_entity: Optional[str] = None                              # Name of W&B entity (default: account's default entity)
     run_id_note: Optional[str] = None                               # Extra note for logging, Weights & Biases
 
     # fmt: on
@@ -159,13 +159,18 @@ def finetune(cfg: FinetuneConfig) -> None:
         cfg.vla_path,
         torch_dtype=torch.bfloat16,
         quantization_config=quantization_config,
+        device_map="auto" if quantization_config else None,
         low_cpu_mem_usage=True,
         trust_remote_code=True,
     )
 
     # Device Placement =>> note that BitsAndBytes automatically handles for quantized training
     if cfg.use_quantization:
-        vla = prepare_model_for_kbit_training(vla)
+        vla = prepare_model_for_kbit_training(
+            vla,
+            use_gradient_checkpointing=True,
+            gradient_checkpointing_kwargs={"use_reentrant": False},
+        )
     else:
         vla = vla.to(device_id)
 
@@ -318,7 +323,13 @@ def finetune(cfg: FinetuneConfig) -> None:
                 progress.update()
 
             # Save Model Checkpoint =>> by default, only keeps the latest checkpoint, continually overwriting it!
-            if gradient_step_idx > 0 and gradient_step_idx % cfg.save_steps == 0:
+            #   NOTE: Guard with `(batch_idx + 1) % cfg.grad_accumulation_steps == 0` so that the save only fires
+            #   ONCE per gradient step (after `optimizer.step()`), not once per micro-batch within a gradient step.
+            if (
+                gradient_step_idx > 0
+                and gradient_step_idx % cfg.save_steps == 0
+                and (batch_idx + 1) % cfg.grad_accumulation_steps == 0
+            ):
                 if distributed_state.is_main_process:
                     print(f"Saving Model Checkpoint for Step {gradient_step_idx}")
 
