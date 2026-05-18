@@ -2,8 +2,11 @@
 <sdf version="1.6">
   <model name="camera">
     <static>true</static>
-    <!-- 相机位置：前方 1m，高 0.8m，俯视桌面 -->
-    <pose>1.0 0.0 0.8 0 0.5 0</pose>
+    <!-- BridgeData V2 风格的俯视视角：相机在桌面上方偏前，大俯角。
+         位置 (0.35, -0.25, 1.15)：桌面 (0.6,0,0.745) 前上方
+         rpy (0, 0.85, 0.5)：朝桌面中心，俯视 ~49°，yaw ~29°
+         画面里：桌面占主体，机械臂从下方/左侧伸入，红块在中央 -->
+    <pose>0.35 -0.25 1.15 0 0.85 0.5</pose>
     <link name="camera_link">
       <visual name="visual">
         <geometry>

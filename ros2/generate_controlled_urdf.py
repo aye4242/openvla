@@ -94,7 +94,20 @@ for jn in JOINTS:
     init_param.text = "0.0"
     ET.SubElement(j, "state_interface", {"name": "velocity"})
 
-# --- 5) 注入 <gazebo> 插件块 ---
+# --- 5) 给 finger link 的 collision 加超高摩擦（解决夹不住问题） ---
+for link in root.iter("link"):
+    name = link.get("name")
+    if name in ("fer_leftfinger", "fer_rightfinger"):
+        for collision in link.iter("collision"):
+            surface = ET.SubElement(collision, "surface")
+            friction = ET.SubElement(surface, "friction")
+            ode = ET.SubElement(friction, "ode")
+            mu = ET.SubElement(ode, "mu")
+            mu.text = "10.0"
+            mu2 = ET.SubElement(ode, "mu2")
+            mu2.text = "10.0"
+
+# --- 6) 注入 <gazebo> 插件块 ---
 gz = ET.SubElement(root, "gazebo")
 gz_plugin = ET.SubElement(gz, "plugin", {
     "filename": "libgazebo_ros2_control.so",

@@ -10,6 +10,7 @@ Usage:
 
 import argparse
 import time
+import cv2
 import numpy as np
 import torch
 from PIL import Image as PILImage
