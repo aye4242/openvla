@@ -91,11 +91,13 @@ class PandaController(Node):
 
         self.target_positions = HOME.copy()
 
-        # KDL: chain + Jacobian solver（缓冲区复用，避免每帧分配）
+        # KDL: chain + FK + Jacobian solver（缓冲区复用，避免每帧分配）
         self.chain = build_panda_chain()
+        self.fk_solver = kdl.ChainFkSolverPos_recursive(self.chain)
         self.jac_solver = kdl.ChainJntToJacSolver(self.chain)
         self.q_kdl = kdl.JntArray(7)
         self.J_kdl = kdl.Jacobian(7)
+        self.ee_frame_kdl = kdl.Frame()
 
         self.pub = self.create_publisher(
             Float64MultiArray, "/forward_position_controller/commands", 10
@@ -131,8 +133,17 @@ class PandaController(Node):
 
         scale = self.get_parameter("action_scale").value
 
+        # VLA 原始输出日志（供分析 sim2real gap）
+        self.get_logger().info(
+            f"VLA raw: dx={action[0]:+.4f}, dy={action[1]:+.4f}, dz={action[2]:+.4f}, "
+            f"dr={action[3]:+.4f}, dp={action[4]:+.4f}, dy={action[5]:+.4f}, grip={action[6]:.2f}"
+        )
+
         # 6D EEF delta（前 3 维 m/step 平移，后 3 维 rad/step 旋转）
         delta_eef = action[:6] * scale  # (6,)
+
+        # 方案 A：屏蔽 dz，只保留水平面 dx+dy（避免 VLA 在 Gazebo 中过度下压）
+        delta_eef[2] = 0.0
 
         # 当前位姿处的雅可比 6×7
         J = self._compute_jacobian(self.target_positions[:7])
