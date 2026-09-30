@@ -55,6 +55,8 @@ coverage.xml
 *.mo
 *.pot
 runs/
+third_party/**/__pycache__/
+isaaclab_migration/__pycache__/
 # Django stuff:
 *.log
 local_settings.py
@@ -151,3 +153,7 @@ data/
 # Rollout videos and wandb logs
 rollouts/
 wandb/
+
+# Migration and third-party code
+isaaclab_migration/
+third_party/
